@@ -1,0 +1,32 @@
+name: main
+on:
+  workflow_dispatch:
+    inputs:
+      Image:
+        description: "Image(xxx/xxx)"
+        required: true
+      ID:
+        description: "Image ID"
+        required: true
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Prepare docker environment
+        run: |
+          curl -fsSL https://get.docker.com | sh
+          touch info.txt
+          echo ${{ github.event.inputs.Image }}_${{ github.event.inputs.ID }} >> info.txt
+      - name: Getting image
+        run: |
+          docker pull ${{ github.event.inputs.Image }}
+          docker images
+          docker -save -o artifact.tar ${{ github.event.inputs.ID }}
+      - name: Upload to Release...
+        uses: ncipollo/release-action@v1.8.0
+        with:
+          artifacts: artifact.tar
+          name: ${{ github.event.inputs.Image }}_${{ github.event.inputs.ID }}_${{ env.BUILD_TIME }}
+          tag: ${{ github.event.inputs.Image }}_${{ env.BUILD_TIME }}
+          bodyFile: info.txt
+          token: ${{ secrets.github.token }}
