@@ -17,11 +17,13 @@ jobs:
           curl -fsSL https://get.docker.com | sh
           touch info.txt
           echo ${{ github.event.inputs.Image }}_${{ github.event.inputs.ID }} >> info.txt
+          mkdir file
       - name: Getting image
         run: |
           docker pull ${{ github.event.inputs.Image }}
           docker images
-          docker -save -o artifact.tar ${{ github.event.inputs.ID }}
+          sudo docker cp ${{ github.event.inputs.ID }} ./file
+          tar -cf ./artifact.tar ./file
       - name: Upload to Release...
         uses: ncipollo/release-action@v1.8.0
         with:
